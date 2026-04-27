@@ -15,15 +15,43 @@ export function err<T>(error: string): Result<T, string> {
 
 // Si result es error, propaga. Si ok, aplica validator al valor.
 export function chain<T>(result: Result<T, string>, validator: Validator<T>): Result<T, string> {
-  throw new Error("TODO: implementar");
+  if (result.status === "error"){
+    return result;
+  }
+  return validator(result.value);
 }
 
 // Encadena: nombre requerido, email válido (tiene @ y .), password >= 8 chars.
 export function validateForm(data: FormData): Result<FormData, string> {
-  throw new Error("TODO: implementar");
+  const inicial = ok(data);
+  const v1 = chain(inicial, (d) => 
+    d.name.trim() !== "" ? ok(d) : err("nombre requerido")
+  );
+  const v2 = chain(v1, (d) => 
+    (d.email.includes("@") && d.email.includes(".")) ? ok(d) : err("email inválido")
+  );
+
+  // 3. Validar password
+  const v3 = chain(v2, (d) => 
+    d.password.length >= 8 ? ok(d) : err("contraseña muy corta")
+  );
+
+  return v3;
 }
 
 // 400 + error si falla, 200 + user si ok.
 export function handleResult(result: Result<FormData, string>): { status: number; body: unknown } {
-  throw new Error("TODO: implementar");
+  if (result.status === "error") {
+    return {
+      status: 400,
+      body: { "error": result.error }
+    };
+  }
+
+  return {
+    status: 200,
+    body: { user: result.value }
+  };
 }
+
+

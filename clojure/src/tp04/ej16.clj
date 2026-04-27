@@ -4,15 +4,20 @@
 
 ;; Vector de reglas: {:field :name, :pred fn, :msg "..."}
 (def user-rules
-  ;; TODO: definir al menos 3 reglas (nombre no vacío, email con @, edad >= 18)
-  [])
+  [{:field :name, :pred #(not (str/blank? (str %))), :msg "nombre no puede estar vacío"}
+   {:field :email, :pred #(str/includes? (str %) "@"), :msg "email debe contener @"}
+   {:field :age, :pred #(and (number? %) (>= % 18)), :msg "edad debe ser un número mayor o igual a 18"}])
 
 ;; Aplica todas las reglas a data. Retorna vector de {:field :error} (vacío si ok).
 (defn validate [rules data]
-  ;; TODO: implementar
+  (reduce (fn [acc {:keys [field pred msg]}]
+            (if (pred (get data field))
+              acc
+              (conj acc {:field field :error msg})))
+          []
+          rules)
   )
 
 ;; true si no hay errores.
 (defn valid? [rules data]
-  ;; TODO: implementar
-  )
+  (empty? (validate rules data)))
